@@ -37,6 +37,8 @@ async def handle_voice_message(message: Message):
 
             response = await get_openai_response(user_text)
 
+            await message.answer(response)
+
             await send_voice_response(message.chat.id, response, message.bot)
 
         except Exception as e:
