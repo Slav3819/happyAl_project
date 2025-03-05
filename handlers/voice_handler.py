@@ -5,8 +5,8 @@ from aiogram.utils.chat_action import ChatActionSender
 from config import settings
 from openai import AsyncOpenAI
 from pydub import AudioSegment
+import assistant
 import io
-
 
 client = AsyncOpenAI(api_key=settings.openai_api_key)
 
@@ -35,7 +35,7 @@ async def handle_voice_message(message: Message):
 
             await message.answer(f"Вы сказали: {user_text}")
 
-            response = await get_openai_response(user_text)
+            response = await assistant.get_openai_response(user_text)
 
             await message.answer(response)
 
@@ -44,15 +44,6 @@ async def handle_voice_message(message: Message):
         except Exception as e:
             logging.error(f"Ошибка при обработке голосового сообщения: {e}")
             await message.answer("Произошла ошибка при обработке вашего сообщения. Попробуйте еще раз.")
-
-async def get_openai_response(text: str) -> str:
-    """Получаем ответ от OpenAI Assistant API."""
-
-    response = await client.chat.completions.create(
-        model="gpt-4",
-        messages=[{"role": "user", "content": text}]
-    )
-    return response.choices[0].message.content
 
 async def send_voice_response(chat_id: int, text: str, bot: Bot):
     """Преобразуем текст в голос с помощью TTS API и отправляем пользователю."""

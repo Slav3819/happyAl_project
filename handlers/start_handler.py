@@ -1,6 +1,8 @@
 from aiogram import types
 from aiogram.dispatcher.router import Router
 from aiogram.filters import Command
+import assistant
+import asyncio
 
 router = Router()
 
@@ -14,4 +16,6 @@ async def handle_start(message: types.Message):
         "3. Озвучивать ответы голосом.\n\n"
         "Просто отправьте мне голосовое сообщение или текст, и я постараюсь помочь!"
     )
+    await assistant.create_assistant()
+
     await message.answer(welcome_text)
