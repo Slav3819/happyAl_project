@@ -1,5 +1,4 @@
 from pydantic_settings import BaseSettings
-import asyncio
 
 class Settings(BaseSettings):
     bot_token: str

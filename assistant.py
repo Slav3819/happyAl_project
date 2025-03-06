@@ -1,6 +1,5 @@
 from openai import AsyncOpenAI
 from config import settings
-import asyncio
 
 client = AsyncOpenAI(api_key=settings.openai_api_key)
 
@@ -42,7 +41,3 @@ async def get_openai_response(text: str) -> str:
     print(settings.openai_assistant_id)
     return response
 
-async def main():
-    assistant_id = await create_assistant()
-
-asyncio.run(main())
