@@ -18,6 +18,5 @@ async def main():
     await assistant.create_assistant()
     await dp.start_polling(bot)
 
-
 if __name__ == "__main__":
     asyncio.run(main())

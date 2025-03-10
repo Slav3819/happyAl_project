@@ -3,6 +3,7 @@ from aiogram.types import Message
 import logging
 from handlers import voice_handler
 import assistant
+
 router = Router()
 
 @router.message(F.text)

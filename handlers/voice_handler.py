@@ -4,9 +4,7 @@ from aiogram.types import Message, BufferedInputFile
 from aiogram.utils.chat_action import ChatActionSender
 from config import settings
 from openai import AsyncOpenAI
-from pydub import AudioSegment
 import assistant
-import io
 
 client = AsyncOpenAI(api_key=settings.openai_api_key)
 
@@ -20,16 +18,7 @@ async def handle_voice_message(message: Message):
             file = await message.bot.get_file(message.voice.file_id)
             file_path = await message.bot.download_file(file.file_path)
 
-            audio = AudioSegment.from_file(file_path, format="ogg")
-            wav_buffer = io.BytesIO()
-            audio.export(wav_buffer, format="wav")
-            wav_buffer.seek(0)
-
-            transcription = await client.audio.transcriptions.create(
-                model="whisper-1",
-                file=("audio.wav", wav_buffer, "audio/wav")
-            )
-            user_text = transcription.text
+            user_text = await assistant.get_openai_transcription(file_path)
 
             logging.info(f"Распознанный текст: {user_text}")
 
@@ -48,14 +37,8 @@ async def handle_voice_message(message: Message):
 async def send_voice_response(chat_id: int, text: str, bot: Bot):
     """Преобразуем текст в голос с помощью TTS API и отправляем пользователю."""
     try:
-        tts_response = await client.audio.speech.create(
-            model="tts-1",
-            voice="alloy",
-            input=text
-        )
 
-        audio_buffer = io.BytesIO(tts_response.read())
-        audio_buffer.seek(0)
+        audio_buffer = await assistant.get_openai_text(text)
 
         voice_file = BufferedInputFile(audio_buffer.read(), filename="response.mp3")
 

@@ -1,5 +1,7 @@
 from openai import AsyncOpenAI
 from config import settings
+from pydub import AudioSegment
+import io
 
 client = AsyncOpenAI(api_key=settings.openai_api_key)
 
@@ -25,9 +27,10 @@ async def get_openai_response(text: str) -> str:
         content=text
     )
 
-    run = await client.beta.threads.runs.create(
+    run = await client.beta.threads.runs.create_and_poll(
         thread_id=thread.id,
-        assistant_id=settings.openai_assistant_id
+        assistant_id=settings.openai_assistant_id,
+        poll_interval_ms=2000
     )
 
     while run.status != "completed":
@@ -41,3 +44,35 @@ async def get_openai_response(text: str) -> str:
     print(settings.openai_assistant_id)
     return response
 
+async def get_openai_transcription(file_path):
+    """Преобразование голосового в текст."""
+
+    audio = AudioSegment.from_file(file_path, format="ogg")
+    wav_buffer = io.BytesIO()
+    audio.export(wav_buffer, format="wav")
+    wav_buffer.seek(0)
+
+    transcription = await client.audio.transcriptions.create(
+        model="whisper-1",
+        file=("audio.wav", wav_buffer, "audio/wav")
+    )
+    await client.audio.transcriptions.create(
+                model="whisper-1",
+                file=("audio.wav", wav_buffer, "audio/wav")
+            )
+
+    return transcription.text
+
+async def get_openai_text(text):
+    """Преобразование  текста в голосовое."""
+
+    tts_response = await client.audio.speech.create(
+        model="tts-1",
+        voice="alloy",
+        input=text
+    )
+
+    audio_buffer = io.BytesIO(tts_response.read())
+    audio_buffer.seek(0)
+
+    return audio_buffer
